@@ -47,7 +47,7 @@ public class RekognitionReourse {
 
     @PostMapping("/detect")
     public ResponseEntity<RekognitionResponse> getDetectResponse(@RequestParam Map<String, String> param) {
-        String webCamImage = param.get("webCamImage");
+        String webCamImage = param.get("image");
         byte[] imageByteArray = Base64.getDecoder().decode(webCamImage);
 
         RekognitionResponse rekognitionResponse = detectFaceService.detect(ByteBuffer.wrap(imageByteArray));

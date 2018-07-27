@@ -1,6 +1,7 @@
 package au.com.suncorp.rekognition.rekognitioninsurance.rest;
 
 import au.com.suncorp.rekognition.rekognitioninsurance.services.DetectFaceService;
+import au.com.suncorp.rekognition.rekognitioninsurance.services.QuoteService;
 import com.amazonaws.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,10 +22,12 @@ import java.util.Map;
 @RequestMapping("/rekognition")
 public class RekognitionReourse {
     private DetectFaceService detectFaceService;
+    private QuoteService quoteService;
 
     @Autowired
-    public RekognitionReourse(DetectFaceService detectFaceService) {
+    public RekognitionReourse(DetectFaceService detectFaceService, QuoteService quoteService) {
         this.detectFaceService = detectFaceService;
+        this.quoteService = quoteService;
     }
 
     @GetMapping("/sample")
@@ -45,12 +48,14 @@ public class RekognitionReourse {
         return response;
     }
 
+    @CrossOrigin(origins = "*")
     @PostMapping("/detect")
-    public ResponseEntity<RekognitionResponse> getDetectResponse(@RequestParam Map<String, String> param) {
-        String webCamImage = param.get("image");
+    public ResponseEntity<RekognitionResponse> getDetectResponse(@RequestBody RekognitionRequest request) {
+        String webCamImage = request.getImage();
         byte[] imageByteArray = Base64.getDecoder().decode(webCamImage);
 
         RekognitionResponse rekognitionResponse = detectFaceService.detect(ByteBuffer.wrap(imageByteArray));
+        rekognitionResponse.setQuoteDetailsList(quoteService.getQuoteDetails(rekognitionResponse));
         return new ResponseEntity<RekognitionResponse>(rekognitionResponse, HttpStatus.OK);
     }
 }
